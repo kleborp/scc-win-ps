@@ -1,0 +1,77 @@
+﻿$computer = $env:COMPUTERNAME
+
+# First bits
+Write-Output ("fix:general::user:" + $env:USERNAME)
+
+# Does not work
+#$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent().IsInRole(`
+#[Security.Principal.WindowsBuiltInRole] "Administrator"))
+#Write-Output ("fix:general::adminuser:" + $isAdmin)
+
+$adminPasswordStatusList = @("Disabled","Enabled","Not Imlemented","Unknown")
+$wakeUpTypeList = @("Reserved","Other","Unknown","APM Timer","Modem Ring","LAN Remote","Power Switch","PCI PME#","AC Power Restored")
+$thermalStateList = @("Unknown","Other","Unknown","Safe","Warning","Critical","Non-recoverable")
+
+# Get-WmiObject -class Win32_OperatingSystem -computername
+$os = Get-WmiObject -class Win32_OperatingSystem -computername $computer
+Write-Output "hlp:general::Data from class Win32_OperatingSystem"
+Write-Output ("fix:general::hostname:" + $os.CSName)
+Write-Output ("fix:general::BuildNumber:" + $os.BuildNumber)
+Write-Output ("fix:general::BuildType:" + $os.BuildType)
+Write-Output ("fix:general::Version:" + $os.version)
+Write-Output ("fix:general::ServicePackMajorVersion:" + $os.ServicePackMajorVersion)
+Write-Output ("fix:general::ServicePackMinorVersion:" + $os.ServicePackMinorVersion)
+Write-Output ("fix:general::BootDevice:" + $os.BootDevice)
+Write-Output ("fix:general::CodeSet:" + $os.CodeSet)
+Write-Output ("fix:general::CountryCode:" + $os.CountryCode)
+Write-Output ("fix:general::CSDVersion:" + $os.CSDVersion)
+Write-Output ("fix:general::EncryptionLevel:" + $os.EncryptionLevel)
+Write-Output ("var:general::FreePhysicalMemory:" + $os.FreePhysicalMemory)
+Write-Output ("var:general::FreeSpaceInPagingFiles:" + $os.FreeSpaceInPagingFiles)
+Write-Output ("var:general::FreeVirtualMemory:" + $os.FreeVirtualMemory)
+Write-Output ("var:general::InstallDate:" + $os.InstallDate)
+Write-Output ("var:general::LastBootUpTime:" + $os.LastBootUpTime)
+Write-Output ("var:general::LocalDateTime:" + $os.LocalDateTime)
+Write-Output ("fix:general::Locale:" + $os.Locale)
+Write-Output ("fix:general::Manufacturer:" + $os.Manufacturer)
+Write-Output ("fix:general::MaxNumberOfProcesses:" + $os.MaxNumberOfProcesses)
+Write-Output ("fix:general::Name:" + $os.Name)
+Write-Output ("fix:general::Organization:" + $os.Organization)
+Write-Output ("fix:general::OSLanguage:" + $os.OSLanguage)
+Write-Output ("fix:general::OSProductSuite:" + $os.OSProductSuite)
+Write-Output ("fix:general::OSType:" + $os.OSType)
+Write-Output ("fix:general::OtherTypeDescription:" + $os.OtherTypeDescription)
+Write-Output ("fix:general::RegisteredUser:" + $os.RegisteredUser)
+Write-Output ("fix:general::SerialNumber:" + $os.SerialNumber)
+Write-Output ("fix:general::SystemDevice:" + $os.SystemDevice)
+Write-Output ("fix:general::SystemDirectory:" + $os.SystemDirectory)
+Write-Output ("fix:general::SystemDrive:" + $os.SystemDrive)
+Write-Output ("var:general::TotalSwapSpaceSize:" + $os.TotalSwapSpaceSize)
+Write-Output ("var:general::TotalVirtualMemorySize:" + $os.TotalVirtualMemorySize)
+Write-Output ("var:general::TotalVisibleMemorySize:" + $os.TotalVisibleMemorySize)
+Write-Output ("fix:general::WindowsDirectory:" + $os.WindowsDirectory)
+
+$cs = Get-WmiObject -Class Win32_ComputerSystem -ComputerName $computer
+Write-Output "hlp:general::Data from class Win32_ComputerSystem"
+Write-Output ("fix:general::Model:" + $cs.Model)
+Write-Output ("fix:general::AdminPasswordStatus:" + $adminPasswordStatusList[$cs.AdminPasswordStatus])
+Write-Output ("fix:general::AutomaticResetBootOption:" + $cs.AutomaticResetBootOption)
+Write-Output ("fix:general::AutomaticResetCapability:" + $cs.AutomaticResetCapability)
+Write-Output ("fix:general::CurrentTimeZone:" + $cs.CurrentTimeZone)
+Write-Output ("fix:general::DaylightInEffect:" + $cs.DaylightInEffect)
+Write-Output ("fix:general::Description:" + $cs.Description)
+Write-Output ("fix:general::Domain:" + $cs.Domain)
+Write-Output ("fix:general::DomainRole:" + $cs.DomainRole)
+Write-Output ("fix:general::EnableDaylightSavingsTime:" + $cs.EnableDaylightSavingsTime)
+Write-Output ("fix:general::FrontPanelResetStatus:" + $cs.FrontPanelResetStatus)
+Write-Output ("fix:general::InfraredSupported:" + $cs.InfraredSupported)
+Write-Output ("fix:general::KeyboardPasswordStatus:" + $cs.KeyboardPasswordStatus)
+Write-Output ("fix:general::Manufacturer:" + $cs.Manufacturer)
+Write-Output ("fix:general::NumberOfProcessors:" + $cs.NumberOfProcessors)
+Write-Output ("fix:general::PauseAfterReset:" + $cs.PauseAfterReset)
+Write-Output ("fix:general::PrimaryOwnerName:" + $cs.PrimaryOwnerName)
+Write-Output ("var:general::Status:" + $cs.Status)
+Write-Output ("fix:general::SystemType:" + $cs.SystemType)
+Write-Output ("var:general::ThermalState:" + $thermalStateList[$cs.ThermalState])
+Write-Output ("var:general::UserName:" + $cs.UserName)
+Write-Output ("var:general::WakeUpType:" + $wakeUpTypeList[$cs.WakeUpType])
