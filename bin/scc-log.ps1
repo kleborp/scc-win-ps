@@ -14,6 +14,10 @@ $sccBinPath = "$currentPath\"
 # Data and tmp paths
 $sccDataPath = "$sccPath\data\"
 $sccTmpPath = "$sccPath\tmp\"
+# This will create paths if it does not exist
+New-Item -ItemType Directory -Force -Path $sccDataPath | Out-Null
+New-Item -ItemType Directory -Force -Path $sccTmpPath | Out-Null
+
 $sccModulePath = "$sccBinPath\modules\"
 
 $sccSnapshotCurrent = "$sccDataPath" + "scc." + $hostname + ".cur"

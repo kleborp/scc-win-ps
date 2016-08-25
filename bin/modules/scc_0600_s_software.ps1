@@ -4,9 +4,31 @@
 $currentPath = $MyInvocation.MyCommand.Path | Split-Path
 Import-Module $currentPath\include\sccFunctions.psm1
 
-# Get some general network related information
-# Reference: https://msdn.microsoft.com/en-us/library/aa394102(v=vs.85).aspx
-$cs = Get-WmiObject -class Win32_ComputerSystem -computername $computer
+# Obtains Windows key
+# TODO: Make it use remote registry instead so it can be run remotely
+function Get-ProductKey {
+    $map="BCDFGHJKMPQRTVWXY2346789" 
+    $value = (get-itemproperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").digitalproductid[0x34..0x42]  
+    $ProductKey = ""  
+    for ($i = 24; $i -ge 0; $i--) { 
+      $r = 0 
+      for ($j = 14; $j -ge 0; $j--) { 
+        $r = ($r * 256) -bxor $value[$j] 
+        $value[$j] = [math]::Floor([double]($r/24)) 
+        $r = $r % 24 
+      } 
+      $ProductKey = $map[$r] + $ProductKey 
+      if (($i % 5) -eq 0 -and $i -ne 0) { 
+        $ProductKey = "-" + $ProductKey 
+      } 
+    } 
+    $ProductKey
+}
+
+# TODO
+function Get-OfficeKey {
+    
+}
 
 # We'll store installed software in this:
 $installedSoftware = @{}
@@ -70,29 +92,6 @@ foreach ($key in $installedSoftware.Keys) {
 }
 # Clear this in case we re-run the script in the same scope
 Remove-Variable installedSoftware
-$OSkey = Get-ProductKey()
+$OSkey = Get-ProductKey
 Write-Output ("fix:software:product keys:OS:" + $OSkey)
 
-function Get-ProductKey {
-    $map="BCDFGHJKMPQRTVWXY2346789" 
-    $value = (get-itemproperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").digitalproductid[0x34..0x42]  
-    $ProductKey = ""  
-    for ($i = 24; $i -ge 0; $i--) { 
-      $r = 0 
-      for ($j = 14; $j -ge 0; $j--) { 
-        $r = ($r * 256) -bxor $value[$j] 
-        $value[$j] = [math]::Floor([double]($r/24)) 
-        $r = $r % 24 
-      } 
-      $ProductKey = $map[$r] + $ProductKey 
-      if (($i % 5) -eq 0 -and $i -ne 0) { 
-        $ProductKey = "-" + $ProductKey 
-      } 
-    } 
-    $ProductKey
-}
-
-# TODO
-function Get-OfficeKey {
-    
-}
