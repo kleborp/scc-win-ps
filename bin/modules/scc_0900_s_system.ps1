@@ -54,13 +54,14 @@ foreach($systemDriver in $systemDrivers | Sort-Object -Property Name) {
     Write-Output ("var:" + $label + "::State:" + $systemDriver.State)
 }
 
+
 ## Installed Updates
 # Reference: https://msdn.microsoft.com/en-us/library/aa394391(v=vs.85).aspx
 $hotfixes = Get-WmiObject -class Win32_QuickFixEngineering -computername $computer
 Write-Output "hlp:system:hotfix::Data from class Win32_QuickFixEngineering"
 
 
-foreach($hotfix in $hotfixes | Sort-Object -Property Name) {
+foreach($hotfix in $hotfixes | Sort-Object -Property HotFixID) {
     $label = ("fix:system:hotfix:" + $hotfix.HotFixID)
     # Apparently the description can be more than 1 line
     foreach($desc in $hotfix.Description.Split("`n")) {
@@ -70,4 +71,40 @@ foreach($hotfix in $hotfixes | Sort-Object -Property Name) {
     Write-Output ($label + "::InstalledBy:" + $hotfix.InstalledBy)
     Write-Output ($label + "::InstalledOn:" + $hotfix.InstalledOn)
     Write-Output ($label + "::ServicePackInEffect:" + $hotfix.ServicePackInEffect)
+}
+
+## Services
+# Reference: https://msdn.microsoft.com/en-us/library/aa394418(v=vs.85).aspx
+$services = Get-WmiObject -class Win32_Service -computername $computer
+Write-Output "hlp:system:services::Data from class Win32_Service"
+
+foreach($service in $services | Sort-Object -Property Name) {
+    $label = ("system:services:" + $service.Name)
+    Write-Output ("fix:" + $label + "::DisplayName:" + $service.DisplayName)
+    Write-Output ("fix:" + $label + "::Description:" + $service.Description)
+    Write-Output ("fix:" + $label + "::PathName:" + $service.PathName)
+    Write-Output ("fix:" + $label + "::ServiceType:" + $service.ServiceType)
+    Write-Output ("fix:" + $label + "::StartName:" + $service.StartName)
+    Write-Output ("fix:" + $label + "::StartMode:" + $service.StartMode)
+    Write-Output ("var:" + $label + "::Started:" + $service.Started)
+    Write-Output ("var:" + $label + "::State:" + $service.State)
+    Write-Output ("var:" + $label + "::AcceptStop:" + $service.AcceptStop)
+    Write-Output ("var:" + $label + "::AcceptPause:" + $service.AcceptPause)
+    Write-Output ("fix:" + $label + "::ErrorControl:" + $service.ErrorControl)
+}
+
+## Service Dependencies
+# Reference: https://msdn.microsoft.com/en-us/library/aa394120(v=vs.85).aspx
+$serviceDependencies = Get-WmiObject -class Win32_DependentService -computername $computer
+Write-Output "hlp:system:services::Data from class Win32_DependentService"
+
+foreach($serviceDependency in $serviceDependencies | Sort-Object -Property Antecedent) {
+    # antecendent and dependent are in the form of "\\<hostname>\root\cimv2:Win32_Service.Name="<servicename>"
+    # Extract using regex, we don't care about system driver dependencies
+    if($serviceDependency.Antecedent -notmatch 'Win32_SystemDriver') {
+        $regex = '.*Name=\"(.*)\"'
+        $antecendent = [regex]::match($serviceDependency.Antecedent, $regex).Groups[1].Value
+        $dependent = [regex]::match($serviceDependency.Dependent, $regex).Groups[1].Value
+        Write-Output ("fix:system:services:" + $antecendent + "::Required by:" + $dependent)
+    }
 }
