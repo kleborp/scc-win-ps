@@ -104,5 +104,4 @@ foreach($startupCommand in $sc) {
     Write-Output ($label + "::Name:" + $startupCommand.Name)
     Write-Output ($label + "::SettingID:" + $startupCommand.SettingID)
     Write-Output ($label + "::User:" + $startupCommand.User)
-    Write-Output ($label + "::")
 }

@@ -3,7 +3,7 @@
 # Import generic functions
 $currentPath = $MyInvocation.MyCommand.Path | Split-Path
 Import-Module $currentPath\include\sccFunctions.psm1
-
+<#
 ## Windows Update Settings
 # Reference: https://technet.microsoft.com/en-gb/library/dd939844(v=ws.10).aspx
 $registryObject =[microsoft.win32.registrykey]::OpenRemoteBaseKey(‘LocalMachine’,$computer)
@@ -106,5 +106,42 @@ foreach($serviceDependency in $serviceDependencies | Sort-Object -Property Antec
         $antecendent = [regex]::match($serviceDependency.Antecedent, $regex).Groups[1].Value
         $dependent = [regex]::match($serviceDependency.Dependent, $regex).Groups[1].Value
         Write-Output ("fix:system:services:" + $antecendent + "::Required by:" + $dependent)
+    }
+} #>
+
+## Firewall Configuration
+$firewallBaseKey = "SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\"
+# There are 3 profiles, Standard, Domain and Public, get config for each
+foreach ($profile in "StandardProfile","DomainProfile","PublicProfile") {
+    $registryPath = ($firewallBaseKey + $profile)
+    $registryObject = [microsoft.win32.registrykey]::OpenRemoteBaseKey(‘LocalMachine’,$computer)
+    $registryKey = $registryObject.OpenSubKey($registryPath)
+
+    $label = ("fix:system:firewall:" + $profile)
+    Write-Host ($label + "::EnableFirewall:" + $registryKey.GetValue("EnableFirewall"))
+    Write-Host ($label + "::DisableNotifications:" + $registryKey.GetValue("DisableNotifications"))
+}
+
+## Firewall Rules
+# TODO: Implement parsing of Get-NetFirewallRule
+
+## Scheduled Tasks
+# On Windows 10 and Server 2012 you can use Get-ScheduledTask
+# For now use schtasks command which is Win 7 and Server 2008 compatible
+#$scheduledTasksCmd = ("schtasks /query /v /fo csv /s " + $computer)
+#$tasks = Invoke-Expression($scheduledTasksCmd)
+$tasks = Get-ScheduledTask
+
+foreach($task in $tasks) {
+    $label = (":system:scheduled tasks:" + $task.TaskName)
+    Write-Output ("fix" + $label + "::Author:" + $task.Author)
+    Write-Output ("fix" + $label + "::TaskPath:" + $task.TaskPath)
+    Write-Output ("var" + $label + "::State:" + $task.State)
+    foreach($action in $task.Actions) {
+        Write-Output ("fix" + $label + "::Action:" + $action.Execute)
+    }
+    foreach($trigger in $task.Triggers) {
+        Write-Output ("fix" + $label + "::Trigger:" + $trigger.Id)
+        #$trigger.Id
     }
 }
