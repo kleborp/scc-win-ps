@@ -1,6 +1,10 @@
 ﻿# This script invokes the collector and validates the output
 # It also adds some generic statistics about start/end/date/runtime
 
+# Todo: 
+# - Implement calling arguments (comment extra timeout hostname)
+# - Implement passing of hostname to modules
+
 $hostname = "$env:COMPUTERNAME".ToLower()
 $startTime = Get-Date
 
@@ -25,12 +29,15 @@ $sccSnapshotCurrent = "$sccDataPath" + "scc." + $hostname + ".cur"
 $sccSnapshotOld = "$sccDataPath" + "scc." + $hostname + ".old"
 $sccSnapshotTmp = "$sccDataPath" + "scc." + $hostname + ".tmp"
 
+# Rename the last snapshot to .old if it exists
+if(Test-Path($sccSnapshotCurrent)) {
+    Move-Item -Force $sccSnapshotCurrent $sccSnapshotOld
+}
+
 # Run the collector
 $dataCollection = Invoke-Expression $sccBinPath\scc-collect.ps1
 
-# Write output to file (and show to console)
-#$dataCollection | Out-File -FilePath $sccSnapshotCurrent
-#$dataCollection | Tee-Object -FilePath $sccSnapshotCurrent
+# Function to process the data
 function Generate-SCCSnapshot ($start, $data) {
     # Calculate size and time taken
     # This is not accurate, need to find better way of measuring what size the file will be
@@ -72,3 +79,4 @@ function Generate-SCCSnapshot ($start, $data) {
 #Generate-SCCSnapshot $startTime $dataCollection | Tee-Object -FilePath $sccSnapshotCurrent
 # This one only writes to file
 Generate-SCCSnapshot $startTime $dataCollection | Out-File -FilePath $sccSnapshotCurrent
+

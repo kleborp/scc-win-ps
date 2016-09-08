@@ -3,7 +3,7 @@
 # Import generic functions
 $currentPath = $MyInvocation.MyCommand.Path | Split-Path
 Import-Module $currentPath\include\sccFunctions.psm1
-<#
+
 ## Windows Update Settings
 # Reference: https://technet.microsoft.com/en-gb/library/dd939844(v=ws.10).aspx
 $registryObject =[microsoft.win32.registrykey]::OpenRemoteBaseKey(‘LocalMachine’,$computer)
@@ -107,7 +107,7 @@ foreach($serviceDependency in $serviceDependencies | Sort-Object -Property Antec
         $dependent = [regex]::match($serviceDependency.Dependent, $regex).Groups[1].Value
         Write-Output ("fix:system:services:" + $antecendent + "::Required by:" + $dependent)
     }
-} #>
+}
 
 ## Firewall Configuration
 $firewallBaseKey = "SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy\"
@@ -118,8 +118,8 @@ foreach ($profile in "StandardProfile","DomainProfile","PublicProfile") {
     $registryKey = $registryObject.OpenSubKey($registryPath)
 
     $label = ("fix:system:firewall:" + $profile)
-    Write-Host ($label + "::EnableFirewall:" + $registryKey.GetValue("EnableFirewall"))
-    Write-Host ($label + "::DisableNotifications:" + $registryKey.GetValue("DisableNotifications"))
+    Write-Output ($label + "::EnableFirewall:" + $registryKey.GetValue("EnableFirewall"))
+    Write-Output ($label + "::DisableNotifications:" + $registryKey.GetValue("DisableNotifications"))
 }
 
 ## Firewall Rules
